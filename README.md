@@ -1,7 +1,8 @@
 # UbuntuExpress - Retail Price Tracker for South African Shopkeepers
+## ScreenShort
 
 https://github.com/user-attachments/assets/15b5810b-bb33-4cd9-8831-b17324c8ed3f
-]() <!-- Add actual screenshot path -->
+
 
 A mobile-first retail price comparison platform empowering informal shopkeepers in South Africa to track supplier prices across key categories like medical, food & beverage, alcohol, and electronics.
 
