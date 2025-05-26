@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -35,9 +35,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthProvider: Setting up auth state listener');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('AuthProvider: Auth state changed', { event, session: !!session });
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -46,18 +49,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      console.log('AuthProvider: Getting initial session');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('AuthProvider: Error getting session:', error);
+        } else {
+          console.log('AuthProvider: Initial session retrieved', { session: !!session });
+        }
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.error('AuthProvider: Exception getting session:', error);
+        setLoading(false);
+      }
     };
 
     getInitialSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('AuthProvider: Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
+    console.log('AuthProvider: Signing out');
     await supabase.auth.signOut();
   };
 
@@ -67,6 +85,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     loading,
     signOut,
   };
+
+  console.log('AuthProvider: Rendering with state', { user: !!user, session: !!session, loading });
 
   return (
     <AuthContext.Provider value={value}>
